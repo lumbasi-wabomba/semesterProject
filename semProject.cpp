@@ -1,10 +1,8 @@
 #include <iostream>
-#include <string>
 #include <map>
 #include <random>
 #include <ctime>
 #include <fstream>
-#include <vector>
 
 
 
@@ -29,7 +27,7 @@ using namespace std;
 const int carRentDays =30;
 class Admin;
 class User{
-    Admin myUser;
+    Admin* myUser;
     int myId, tellNo;
     string fname, sname, email, usrname, passwd;
     double accBal;
@@ -76,12 +74,13 @@ class User{
         int checkAccountBal(){
 
         }
-        string carRequest(string make, string model){
-            if(myUser.checkCarExists( make, model)){    
-                return "approved";
+        string carRequest(string make, string model, int days){
+            if(myUser && myUser->checkCarExists(make, model)){  
+                return "approved, countdown started";
             }
+            return "not approved";
+            
         }
-        string carRetrun(){}
 
 };
 
@@ -125,12 +124,13 @@ public:
     }
 
     ifstream fileIn;
+    ofstream fileOut;
     int id, tellNo;
     string fname, sname, email;
     double accBal;
     void viewRegisteredUsers(){
         map<int, userInfo>viewUsers;
-        fileIn.open("userDb.txt");
+        fileIn.open("userDB.txt");
         while(fileIn>> id>>fname >> sname>> tellNo>>email >>accBal){
             viewUsers[id] = userInfo{fname, sname, tellNo, email, accBal};
         }
@@ -151,8 +151,33 @@ public:
         }
          return false;
     }
-       
+    string updateCarDB(string plate){
+       map<string, carInfo>updateCars;
+        fileIn.open("carsDB.txt");
+        while(fileIn>> make>> model>> numPlate){
+            updateCars[numPlate] = carInfo{make, model, numPlate};
+        }
+        for(auto& [numplate, carInfo] : updateCars){
+            if(numplate == plate){
+                updateCars.erase(numplate);
+                break;
+            }
+        }
+        fileOut.open("carsDB.txt");
+        for(auto& [numberplate, carInfo] : updateCars){
+            fileOut<< numberplate <<" "<< carInfo.carMake <<" "<< carInfo.carModel;
+        }
+        fileOut.close();
+       return "updated";
+        }
+    
+    string updateCarReturn(string plate, string make, string model){
+            ofstream fileOut("carsDB.txt", ios::app);
+            fileOut<<plate<< " "<<make<<" "<< model;
+        return "updated CarsDB";
+         }
     };
+   
 
 int idGenerator(){
     srand(time(0));
