@@ -77,6 +77,7 @@ class User{
             fileWrite << myId<< " "<< loginDetails.userUsername <<" "<<  loginDetails.userPassword;
         }
     fileWrite.close();  
+    return " ";
     }
     int updateAccountBal(string usrname, int money){
             int updatedBal;
@@ -265,6 +266,7 @@ bool checkUserlogin(int role, string username, string password){
     }else {
         cerr <<"invalid input";
     }
+    return false;
 }
 
 int main(){
@@ -283,6 +285,11 @@ int main(){
     cin>>role;
 
     int option;
+    string make, model, usrname, plate, oldPass, newPass;
+    string fName, sName, Email;
+    int phone;
+    double accBal;
+
     switch(role){
         case 1:
             cout<<"****WELCOME TO USER LOGIN PAGE****"<<endl;
@@ -339,6 +346,8 @@ int main(){
                         cout<<"invalid input"<<endl;
                 }
 
+            }else{
+                cout<<"failed to login. Try again!"<<endl;
             }
             break;
 
@@ -362,10 +371,7 @@ int main(){
                 cout<<"        5.View registered users"<<endl;
                 cout<<"        6.View available cars"<<endl;
 
-                string make, model, usrname, plate, oldPass, newPass;
-                string fName, sName, Email;
-                int phone;
-                double accBal;
+                cin>>option;
                 switch(option){
                 case 1:{
                     //register new user
@@ -439,6 +445,8 @@ int main(){
                     cout<<"invalid input!"<<endl;
 
                 }
+            }else{
+                cout<<"invalid login. Try again!"<<endl;
             }
              break;
 
