@@ -71,8 +71,23 @@ class User{
             }
         fileWrite.close();  
         }
-        int checkAccountBal(){
-
+        int updateAccountBal(int id, int money){
+            int updatedBal;
+            fileRead.open("userDB.txt");
+            fileWrite.open("tempUserDB.txt");
+            while(fileRead>> myId>>fname >> sname>> tellNo>> email>> accBal){
+                if(id == myId){
+                    accBal += money;
+                    updatedBal = accBal;
+                }
+                fileWrite << myId << " " << fname << " " << sname << " "
+                  << tellNo << " " << email << " " << accBal;
+            }
+            fileRead.close();
+            fileWrite.close();
+            remove("UserDB.txt");
+            rename("tempUserDB.txt", "userDB.txt");
+            return updatedBal;
         }
         string carRequest(string make, string model, int days){
             if(myUser && myUser->checkCarExists(make, model)){  
