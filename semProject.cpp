@@ -24,9 +24,10 @@ using namespace std;
         string carModel;
         string numberPlate;
     };
-const int carRentDays =30;
+
 class Admin;
 class User{
+ public:
     Admin* myUser;
     int myId, tellNo;
     string fname, sname, email, usrname, passwd;
@@ -34,49 +35,55 @@ class User{
     map<int, userInfo> myDetails;
     ifstream fileRead;
     ofstream fileWrite;
-    public:
-        void displayMyDetails(int id, userInfo){
-            
-            fileRead.open("userDB.txt");
-            while(fileRead>> myId>>fname >> sname>> tellNo>> email>> accBal){
-                if(id == myId){
-                    myDetails[myId] = userInfo{fname, sname, tellNo, email, accBal};
-                }
-            }
-            fileRead.close();
-            for (auto& detail : myDetails){
-                cout<<"userID "<<detail.first<< "\n" 
-                <<"names "<< detail.second.firstName<< " "<< detail.second.secondName<<"\n"
-                <<"telephone number " << detail.second.phoneNumber<<"\n"
-                <<"email "<< detail.second.email<<"\n"
-                <<"account balance "<< detail.second.accountBal;
-            }
 
+    void displayMyDetails(string usrname){
+        
+        fileRead.open("userDB.txt");
+        while(fileRead>> myId>>fname >> sname>> tellNo>> email>> accBal){
+            if(usrname == email){
+                myDetails[myId] = userInfo{fname, sname, tellNo, email, accBal};
+            }
+            for(auto& [myId, userInfo] : myDetails){
+                cout<<"your userID: "<<myId<<" first name: "<<userInfo.firstName<<" second name: "<<userInfo.secondName<<" phone number: "<< userInfo.phoneNumber<<" email: "<<userInfo.email<<" account balance: "<< userInfo.accountBal<<endl;
+            }
         }
-        void changePassword(string user, string pass, string newPass, loginDetails){
-            fileRead.open("users.txt");
-            map<int, loginDetails> tempUserLoginMap;
-            while(fileRead >>myId >> usrname>> passwd){
-              tempUserLoginMap[myId] = loginDetails{usrname, passwd};  
-            }
-            for(auto& entry : tempUserLoginMap){
-                if(entry.second.userUsername == user && entry.second.userPassword == passwd){
-                    entry.second.userPassword = newPass;
-                }
-            }
-            fileRead.close();
-            fileWrite.open("users.txt");
-            for(auto& [myId, loginDetails] : tempUserLoginMap){
-                fileWrite << myId<< " "<< loginDetails.userUsername <<" "<<  loginDetails.userPassword;
-            }
-        fileWrite.close();  
+        fileRead.close();
+        for (auto& detail : myDetails){
+            cout<<"userID "<<detail.first<< "\n" 
+            <<"names "<< detail.second.firstName<< " "<< detail.second.secondName<<"\n"
+            <<"telephone number " << detail.second.phoneNumber<<"\n"
+            <<"email "<< detail.second.email<<"\n"
+            <<"account balance "<< detail.second.accountBal;
         }
-        int updateAccountBal(int id, int money){
+
+    }
+    string changePassword(string user, string pass, string newPass){
+        fileRead.open("users.txt");
+        map<int, loginDetails> tempUserLoginMap;
+        while(fileRead >>myId >> usrname>> passwd){
+            tempUserLoginMap[myId] = loginDetails{usrname, passwd};  
+        }
+        for(auto& entry : tempUserLoginMap){
+            if(entry.second.userUsername == user && entry.second.userPassword == passwd){
+                entry.second.userPassword = newPass;
+                return "password updated";
+            }else{
+                return "failed to update";
+            }
+        }
+        fileRead.close();
+        fileWrite.open("users.txt");
+        for(auto& [myId, loginDetails] : tempUserLoginMap){
+            fileWrite << myId<< " "<< loginDetails.userUsername <<" "<<  loginDetails.userPassword;
+        }
+    fileWrite.close();  
+    }
+    int updateAccountBal(string usrname, int money){
             int updatedBal;
             fileRead.open("userDB.txt");
             fileWrite.open("tempUserDB.txt");
             while(fileRead>> myId>>fname >> sname>> tellNo>> email>> accBal){
-                if(id == myId){
+                if(usrname == email){
                     accBal += money;
                     updatedBal = accBal;
                 }
@@ -89,13 +96,7 @@ class User{
             rename("tempUserDB.txt", "userDB.txt");
             return updatedBal;
         }
-        string carRequest(string make, string model, int days){
-            if(myUser && myUser->checkCarExists(make, model)){  
-                return "approved, countdown started";
-            }
-            return "not approved";
-            
-        }
+//car request
 
 };
 
@@ -106,8 +107,13 @@ public:
     map <int, loginDetails>userLoginDetails;
     map <int, userInfo>userDetails;
     map <string, carInfo> carInventory;
-    
-    
+    ofstream fileOut;
+    ifstream fileIn;
+    int id, tellNo;
+    string fname, sname, email;
+    double accBal;
+    string make, model, numPlate;
+
     void addCarInventory(string numberPlate, string carMake, string carModel){
         carInventory[numberPlate] = carInfo{carMake, carModel};
     }
@@ -118,54 +124,62 @@ public:
         userLoginDetails[userId] = loginDetails{userUsername, userPassword};
     }
 
-    ofstream fileOut;
+
     void saveUserDetails(){ 
         fileOut.open("userDB.txt");
         for (auto&  [userId, userInfo] : userDetails){
             fileOut<< userId << userInfo.firstName << " "<< userInfo.secondName <<" "<< userInfo.phoneNumber <<" "<< userInfo.email <<" "<< userInfo.accountBal;
         }
+        fileOut.close();
     }
     void saveLoginDetails(){
         fileOut.open("users.txt");
         for(auto& [userId, loginDetails] : userLoginDetails){
             fileOut<< userId <<" "<< loginDetails.userUsername <<" "<< loginDetails.userPassword;
         }
+        fileOut.close();
     }
     void savecarInventory(){
         fileOut.open("carsDB.txt");
         for(auto& [numberplate, carInfo] : carInventory){
             fileOut<< numberplate <<" "<< carInfo.carMake <<" "<< carInfo.carModel;
         }
+        fileOut.close();
     }
 
-    ifstream fileIn;
-    ofstream fileOut;
-    int id, tellNo;
-    string fname, sname, email;
-    double accBal;
     void viewRegisteredUsers(){
         map<int, userInfo>viewUsers;
         fileIn.open("userDB.txt");
         while(fileIn>> id>>fname >> sname>> tellNo>>email >>accBal){
             viewUsers[id] = userInfo{fname, sname, tellNo, email, accBal};
         }
+        fileIn.close();
+        for(auto& [id, userInfo]: viewUsers){
+            cout<<"user id: "<<id<<" first name: "<<userInfo.firstName<<" second name: "<<userInfo.secondName<<" phone number: "<< userInfo.phoneNumber<<" email: "<<userInfo.email<<" account balance: "<< userInfo.accountBal<<endl;
+        }
     }
-    string make, model, numPlate;
     void viewCars(){
         map<string, carInfo>viewCars;
         fileIn.open("carsDB.txt");
-        while(fileIn>> make>> model>> numPlate){
+        while(fileIn>> numPlate>> make>> model){
             viewCars[numPlate] = carInfo{make, model, numPlate};
         }
-    }
-    bool checkCarExists( string make, string model){
-            for(auto& [numberplate, carInfo]: carInventory){
-                if(carInfo.carMake == make && carInfo.carModel == model){
-                    return true;
-                }
+        fileIn.close();
+        for (auto& [numPlate, carInfo] : viewCars){
+            cout<< "number plate: "<<numPlate<<" make: "<< carInfo.carMake <<" model: "<<carInfo.carModel<<endl;
         }
-         return false;
     }
+    string checkCarExists( string make, string model){
+           fileIn.open("carsDB.txt");
+           while(fileIn>>numPlate >> make>> model){
+                if( make == make && model == model){
+                    return numPlate;
+                }
+           }
+           fileIn.close();
+         return " ";
+    }
+
     string updateCarDB(string plate){
        map<string, carInfo>updateCars;
         fileIn.open("carsDB.txt");
@@ -182,15 +196,43 @@ public:
         for(auto& [numberplate, carInfo] : updateCars){
             fileOut<< numberplate <<" "<< carInfo.carMake <<" "<< carInfo.carModel;
         }
+        fileIn.close();
         fileOut.close();
        return "updated";
         }
-    
     string updateCarReturn(string plate, string make, string model){
             ofstream fileOut("carsDB.txt", ios::app);
             fileOut<<plate<< " "<<make<<" "<< model;
+            fileOut.close();
         return "updated CarsDB";
          }
+    string changeAdminPasswd(string passwdOld, string newPasswd){
+        string passwd, usrname;
+        fileIn.open("admin.txt");
+        fileOut.open("tempAdmin.txt");
+        while(fileIn>> usrname >> passwd){
+            if (passwdOld == passwd){
+                passwd = newPasswd;
+                break;
+            }
+            fileOut<< usrname<<" "<< passwd;
+        }
+        fileIn.close();
+        fileOut.close();
+        return "password changed";
+    }
+    bool checkUserAccBal(string usrName){
+        fileIn.open("userDB.txt");
+        while(fileIn>> id>>fname >> sname>> tellNo>>email >>accBal){
+            if(usrName == email){
+                if(accBal > 10500){
+                    return true;
+                }
+                return false;
+            }
+        }
+       return  false;
+    }
     };
    
 
@@ -226,6 +268,8 @@ bool checkUserlogin(int role, string username, string password){
 }
 
 int main(){
+    Admin myAdmin;
+    User client;
     cout<<"****** Welcome to CAR RENTAL SYSTEM ******" <<endl;
     cout<<"Select your role to proceed"<<endl;
     cout<<"        1. Normal User Login"<<endl;
@@ -234,16 +278,15 @@ int main(){
     cout<<"Enter role to proceed: "<<endl;
     cout<<"------------------------------------------"<<endl;
     int role;
-    string username, password;
+    string username, password, newPasswd;
+    int cash;
     cin>>role;
 
     int option;
-    ifstream readFile;
-    ofstream writeFile;
     switch(role){
         case 1:
             cout<<"****WELCOME TO USER LOGIN PAGE****"<<endl;
-            cout<<"Enter your username: "<<endl;
+            cout<<"Enter your username(email): "<<endl;
             cin>>username;
             cout<<"Enter your password"<<endl;
             cin>>password;
@@ -256,7 +299,46 @@ int main(){
                 cout<<"        1.View personal details"<<endl;
                 cout<<"        2.Request to rent a car"<<endl;
                 cout<<"        3.Return a rented car"<<endl;
-                cout<<"        4.Change balance"<<endl;
+                cout<<"        4.Update account balance"<<endl;
+                cout<<"        5.Change password"<<endl;
+
+                cin>>option;
+                switch(option){
+                    case 1:{
+                        //display user details;
+                        client.displayMyDetails(username);
+                    }
+                        break;
+                    case 2:{
+                        //havent figured out!!
+                        //request to rent a car
+                    }
+                        break;
+                    case 3:{
+                        //not implemented
+                        //return a rented car
+                    }
+                        break;
+                    case 4:{
+                        //update account balance
+                        cout<<"enter cash you want to add to your account"<<endl;
+                        cin>>cash;
+                        client.updateAccountBal(username, cash);
+                    }
+                        break;
+                    case 5:{
+                        //change password
+                        cout<<"enter your current password: "<<endl;
+                        cin>>password;
+                        cout<<"enter new password: "<<endl;
+                        cin>>newPasswd;
+                        client.changePassword(username, password, newPasswd);
+                    }
+                        break;
+                    default:
+                        cout<<"invalid input"<<endl;
+                }
+
             }
             break;
 
@@ -280,13 +362,13 @@ int main(){
                 cout<<"        5.View registered users"<<endl;
                 cout<<"        6.View available cars"<<endl;
 
+                string make, model, usrname, plate, oldPass, newPass;
+                string fName, sName, Email;
+                int phone;
+                double accBal;
                 switch(option){
                 case 1:{
-                    string fName;
-                    string sName;
-                    int phone;
-                    string Email;
-                    double accBal;
+                    //register new user
                     cout<<"Enter the user's name(first and last): "<<endl;
                     cin>> fName >> sName;
                     cout<<"enter the user's phone number"<<endl;
@@ -304,49 +386,67 @@ int main(){
                     break;
                 case 2:{
                      //approve user car rent request 
+                    cout<<"input the make you want (eg Toyota): "<<endl;
+                    cin>>make;
+                    cout<<"input the model you want(eg prado): "<<endl;
+                    cin>>model;
+                    cout<<"enter your username/ email"<<endl;
+                    cin>>usrname;
+                    
+                    string carPlate = myAdmin.checkCarExists(make, model);
+                    if(!carPlate.empty()){
+                        if(myAdmin.checkUserAccBal(usrname)){
+                            myAdmin.updateCarDB(carPlate);
+                        }else{
+                            cout<<"insufficient funds"<<endl;
+                        }
+                    }else{
+                        cout<<"car is already taken";
+                    }
                 }
                     break;
                 case 3:{
                    //Update system on returned cars
-
+                    cout<<"the car make(eg toyota)"<<endl;
+                    cin>>make;
+                    cout<<"the car model(eg prado)"<<endl;
+                    cin>>model;
+                    cout<<"the number plate"<<endl;
+                    cin>>plate;
+                    myAdmin.updateCarReturn(plate, make, model);
                 }
                     break;   
                 case 4:{
                     //Change password
-                    string name, pass, newPass;
-                    readFile.open("admin.txt");
-                    string adminDetails[2] ={};
-                    while(readFile>> name >>pass){
-                        for(int i=0; i< sizeof(adminDetails)/ sizeof(adminDetails[0]); i++)
-                            adminDetails[i] = name;
-                    }
+                   cout<<"enter the current password"<<endl;
+                   cin>>oldPass;
+                   cout<<"enter the new password"<<endl;
+                   cin>>newPass;
+                   myAdmin.changeAdminPasswd(oldPass, newPass);
                 }
                     break;   
                 case 5:{
                     //View registered users
+                    myAdmin.viewRegisteredUsers();
                 }
                     break;   
                 case 6: {
                      //View available cars
+                     myAdmin.viewCars();
                 }
                     break;
-
                 default:
                     cout<<"invalid input!"<<endl;
 
                 }
             }
-           
-            
-
              break;
-
 
         case 3:
             exit(0);
             break;
         default:
-            cout<<"Invalid output"<<endl;
+            cout<<"Invalid input"<<endl;
     }
 
     return 0;
