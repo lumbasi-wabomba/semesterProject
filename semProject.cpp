@@ -101,11 +101,13 @@ class User{
     string requestCar(string usernme, string make, string model){
         fileWrite.open("request.txt" , ios::app);
         fileWrite<<usernme<<" "<<make<<" "<<model;
+        return "requested a car to rent";
 
     }
     string returnCar(string make, string model, string plate){
         fileWrite.open("return.txt");
         fileWrite<<make<<" "<<model<<" "<<plate;
+        return "requested a return of a car";
     }
 };
 
@@ -264,7 +266,7 @@ public:
             }
         }
         fileIn.close();
-        
+        return " ";
     }    
 };
     
