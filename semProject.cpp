@@ -12,14 +12,14 @@ using namespace std;
         string userUsername;   
         string userPassword;
     };
-    struct userInfo{
+struct userInfo{
         string firstName;
         string secondName;
         int phoneNumber;
         string email;
         double accountBal;
     };
-    struct carInfo{
+struct carInfo{
         string carMake;
         string carModel;
         string numberPlate;
@@ -30,7 +30,7 @@ class User{
  public:
     Admin* myUser;
     int myId, tellNo;
-    string fname, sname, email, usrname, passwd;
+    string fname, sname, email, usrname, passwd, carplate;
     double accBal;
     map<int, userInfo> myDetails;
     ifstream fileRead;
@@ -98,7 +98,15 @@ class User{
             return updatedBal;
         }
 //car request
+    string requestCar(string usernme, string make, string model){
+        fileWrite.open("request.txt" , ios::app);
+        fileWrite<<usernme<<" "<<make<<" "<<model;
 
+    }
+    string returnCar(string make, string model, string plate){
+        fileWrite.open("return.txt");
+        fileWrite<<make<<" "<<model<<" "<<plate;
+    }
 };
 
 class Admin{
@@ -172,8 +180,9 @@ public:
     }
     string checkCarExists( string make, string model){
            fileIn.open("carsDB.txt");
-           while(fileIn>>numPlate >> make>> model){
-                if( make == make && model == model){
+           string carMake, carModel;
+           while(fileIn>>numPlate >> carMake>> carModel){
+                if( carMake == make && carModel == model){
                     return numPlate;
                 }
            }
@@ -184,7 +193,7 @@ public:
     string updateCarDB(string plate){
        map<string, carInfo>updateCars;
         fileIn.open("carsDB.txt");
-        while(fileIn>> make>> model>> numPlate){
+        while(fileIn>> numPlate>> make>> model){
             updateCars[numPlate] = carInfo{make, model, numPlate};
         }
         for(auto& [numplate, carInfo] : updateCars){
@@ -201,9 +210,13 @@ public:
         fileOut.close();
        return "updated";
         }
-    string updateCarReturn(string plate, string make, string model){
-            ofstream fileOut("carsDB.txt", ios::app);
-            fileOut<<plate<< " "<<make<<" "<< model;
+    string updateCarReturn(){
+            fileIn.open("return.txt");
+            fileOut.open("carsDB.txt", ios::app);
+            while(fileIn >> make >> model >> numPlate){
+                 fileOut<<numPlate<< " "<<make<<" "<< model;
+            }
+           fileIn.close();
             fileOut.close();
         return "updated CarsDB";
          }
@@ -234,8 +247,27 @@ public:
         }
        return  false;
     }
-    };
-   
+    string approveCarRequest(string make, string model, string usrname) {
+        string usernme, mak, mdl;
+        fileIn.open("request.txt");
+        while(fileIn>>usrname>> mak>> mdl){
+            string carPlate = checkCarExists(make, model);
+            if (!carPlate.empty()) {
+                if (checkUserAccBal(usrname)) {
+                    updateCarDB(carPlate);
+                    return "Car request approved";
+                } else {
+                    return "Insufficient funds";
+                }
+            } else {
+                return "Car not available";
+            }
+        }
+        fileIn.close();
+        
+    }    
+};
+    
 
 int idGenerator(){
     srand(time(0));
@@ -270,6 +302,7 @@ bool checkUserlogin(int role, string username, string password){
 }
 
 int main(){
+    while(true){
     Admin myAdmin;
     User client;
     cout<<"****** Welcome to CAR RENTAL SYSTEM ******" <<endl;
@@ -291,7 +324,7 @@ int main(){
     double accBal;
 
     switch(role){
-        case 1:
+        case 1: {
             cout<<"****WELCOME TO USER LOGIN PAGE****"<<endl;
             cout<<"Enter your username(email): "<<endl;
             cin>>username;
@@ -302,56 +335,75 @@ int main(){
             if(checkUserlogin(role, username, password)){
                 cout<<"Successfully logged in"<<endl;
                 cout<<" "<<endl;
-                cout<<"Select one of the options below"<<endl;
-                cout<<"        1.View personal details"<<endl;
-                cout<<"        2.Request to rent a car"<<endl;
-                cout<<"        3.Return a rented car"<<endl;
-                cout<<"        4.Update account balance"<<endl;
-                cout<<"        5.Change password"<<endl;
+                int userOption;
+                do{
+                    cout<<"Select one of the options below"<<endl;
+                    cout<<"        1.View personal details"<<endl;
+                    cout<<"        2.Request to rent a car"<<endl;
+                    cout<<"        3.Return a rented car"<<endl;
+                    cout<<"        4.Update account balance"<<endl;
+                    cout<<"        5.Change password"<<endl;
+                    cout<<"        6.Logout"<<endl;
 
-                cin>>option;
-                switch(option){
-                    case 1:{
-                        //display user details;
-                        client.displayMyDetails(username);
+                    cin>>userOption;
+                    switch(userOption){
+                        case 1:{
+                            //display user details;
+                            client.displayMyDetails(username);
+                        }
+                            break;
+                        case 2:{
+                            cout<<"enter car make you want(eg toyota): "<<endl;
+                            cin>>make;
+                            cout<<"enter the model you want"<<endl;
+                            cin>>model;
+                            client.requestCar(username, make, model);
+                            cout<<"admin needs to approve. enter the admin username and password please"<<endl;
+                            cin>>usrname>>password;
+                            if (checkUserlogin(2, username, password)){
+                                myAdmin.approveCarRequest(username, make, model);
+                            }
+                        }
+                            break;
+                        case 3:{
+                            cout<<"input the make you want to return (eg Toyota): "<<endl;
+                            cin>>make;
+                            cout<<"input the model you want to return(eg prado): "<<endl;
+                            cin>>model;
+                            cout<<"enter the number plate"<<endl;
+                            cin>>plate;
+                            client.returnCar(make,model, plate);
+                        }
+                            break;
+                        case 4:{
+                            //update account balance
+                            cout<<"enter cash you want to add to your account"<<endl;
+                            cin>>cash;
+                            client.updateAccountBal(username, cash);
+                        }
+                            break;
+                        case 5:{
+                            //change password
+                            cout<<"enter your current password: "<<endl;
+                            cin>>password;
+                            cout<<"enter new password: "<<endl;
+                            cin>>newPasswd;
+                            client.changePassword(username, password, newPasswd);
+                        }
+                            break;
+                        case 6:
+                            cout<<"Logging out..."<<endl;
+                            break;
+                        default:
+                            cout<<"invalid input"<<endl;
                     }
-                        break;
-                    case 2:{
-                        //havent figured out!!
-                        //request to rent a car
-                    }
-                        break;
-                    case 3:{
-                        //not implemented
-                        //return a rented car
-                    }
-                        break;
-                    case 4:{
-                        //update account balance
-                        cout<<"enter cash you want to add to your account"<<endl;
-                        cin>>cash;
-                        client.updateAccountBal(username, cash);
-                    }
-                        break;
-                    case 5:{
-                        //change password
-                        cout<<"enter your current password: "<<endl;
-                        cin>>password;
-                        cout<<"enter new password: "<<endl;
-                        cin>>newPasswd;
-                        client.changePassword(username, password, newPasswd);
-                    }
-                        break;
-                    default:
-                        cout<<"invalid input"<<endl;
-                }
-
+                }while(userOption !=6);
             }else{
                 cout<<"failed to login. Try again!"<<endl;
             }
             break;
-
-        case 2:
+        }
+        case 2:{
             cout<<"****WELCOME TO ADMINSTRATOR LOGIN PAGE****"<<endl;
             cout<<"Enter admin username: "<<endl;
             cin>>username;
@@ -359,10 +411,11 @@ int main(){
             cin>>password;
             cout<<"------------------------------------------"<<endl;
 
-            
+    
             if(checkUserlogin(role, username, password)){
                 cout<<"Successfully logged in"<<endl;
                 cout<<" "<<endl;
+                do{
                 cout<<"Select one of the options below"<<endl;
                 cout<<"        1.Register new users"<<endl;
                 cout<<"        2.Approve user's Car rent request"<<endl;
@@ -370,6 +423,7 @@ int main(){
                 cout<<"        4.Change password"<<endl;
                 cout<<"        5.View registered users"<<endl;
                 cout<<"        6.View available cars"<<endl;
+                cout<<"        7. logout"<<endl;
 
                 cin>>option;
                 switch(option){
@@ -388,6 +442,7 @@ int main(){
                     Admin user;
                     user.addUserDetails(ID, fName, sName, phone, Email, accBal);
                     user.saveUserDetails();
+                    //enter q to quit/a**00 to go back to main/ call the loop again
                 }
                     break;
                 case 2:{
@@ -399,27 +454,11 @@ int main(){
                     cout<<"enter your username/ email"<<endl;
                     cin>>usrname;
                     
-                    string carPlate = myAdmin.checkCarExists(make, model);
-                    if(!carPlate.empty()){
-                        if(myAdmin.checkUserAccBal(usrname)){
-                            myAdmin.updateCarDB(carPlate);
-                        }else{
-                            cout<<"insufficient funds"<<endl;
-                        }
-                    }else{
-                        cout<<"car is already taken";
-                    }
                 }
                     break;
                 case 3:{
                    //Update system on returned cars
-                    cout<<"the car make(eg toyota)"<<endl;
-                    cin>>make;
-                    cout<<"the car model(eg prado)"<<endl;
-                    cin>>model;
-                    cout<<"the number plate"<<endl;
-                    cin>>plate;
-                    myAdmin.updateCarReturn(plate, make, model);
+                    myAdmin.updateCarReturn();
                 }
                     break;   
                 case 4:{
@@ -445,17 +484,19 @@ int main(){
                     cout<<"invalid input!"<<endl;
 
                 }
+            }while(option !=7);
             }else{
                 cout<<"invalid login. Try again!"<<endl;
             }
-             break;
-
+       
+        }
+        break;
         case 3:
             exit(0);
             break;
         default:
             cout<<"Invalid input"<<endl;
     }
-
+}
     return 0;
 }
