@@ -137,21 +137,21 @@ public:
 
 
     void saveUserDetails(){ 
-        fileOut.open("userDB.txt");
+        fileOut.open("userDB.txt", ios::app);
         for (auto&  [userId, userInfo] : userDetails){
             fileOut<< userId << userInfo.firstName << " "<< userInfo.secondName <<" "<< userInfo.phoneNumber <<" "<< userInfo.email <<" "<< userInfo.accountBal;
         }
         fileOut.close();
     }
     void saveLoginDetails(){
-        fileOut.open("users.txt");
+        fileOut.open("users.txt", ios::app);
         for(auto& [userId, loginDetails] : userLoginDetails){
             fileOut<< userId <<" "<< loginDetails.userUsername <<" "<< loginDetails.userPassword;
         }
         fileOut.close();
     }
     void savecarInventory(){
-        fileOut.open("carsDB.txt");
+        fileOut.open("carsDB.txt", ios::app);
         for(auto& [numberplate, carInfo] : carInventory){
             fileOut<< numberplate <<" "<< carInfo.carMake <<" "<< carInfo.carModel;
         }
