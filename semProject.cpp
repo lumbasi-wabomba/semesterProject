@@ -336,7 +336,11 @@ int main(){
         cout<<"        2. Adminstrator Login"<<endl;
         cout<<"        3. Exit"<<endl;
         cout<<"Enter role to proceed: "<<endl;
-        cout<<"------------------------------------------"<<endl;
+        for(int i = 0; i < 42; i++){
+                    cout<<"-";
+                }
+                cout <<"\n";
+        
         int role;
         string username, password, newPasswd;
         int cash;
@@ -353,7 +357,10 @@ int main(){
                 cin>>username;
                 cout<<"Enter your password"<<endl;
                 cin>>password;
-                cout<<"------------------------------------------"<<endl;
+                for(int i = 0; i < 42; i++){
+                    cout<<"-"<<endl;
+                }
+                cout <<"\n";
                 if(checkUserlogin(role, username, password)){
                     cout<<"Successfully logged in"<<endl;
                     cout<<" "<<endl;
@@ -427,7 +434,11 @@ int main(){
                 cin>>username;
                 cout<<"Enter admin password"<<endl;
                 cin>>password;
-                cout<<"------------------------------------------"<<endl;
+                for(int i = 0; i < 42; i++){
+                    cout<<"-";
+                }
+                cout <<"\n";
+                
                 if(checkUserlogin(role, username, password)){
                     cout<<"Successfully logged in"<<endl;
                     cout<<" "<<endl;
