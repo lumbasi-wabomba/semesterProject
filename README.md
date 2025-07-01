@@ -6,7 +6,7 @@ A simple command-line **Car Rental Management System** built using C++. It allow
 
 ##  Features
 
-### 👤User
+### User
 - Login with email and password
 - View personal account details
 - Request to rent a car
@@ -14,7 +14,7 @@ A simple command-line **Car Rental Management System** built using C++. It allow
 - Update account balance
 - Change login password
 
-### 🛠️Admin
+### Admin
 - Login with admin credentials
 - Register new users
 - Approve or reject car rental requests
